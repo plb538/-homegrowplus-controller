@@ -30,6 +30,13 @@ CORS(app)
 #pulsewave.ChangeFrequency(hertz)
 #pulsewave.stop()
 
+#Desired Endpoints:
+#"/sensors/lights"
+#"/sensors/fluids"
+#"/sensors/pumps"
+#"/control/pumps"
+#"/control/lights"
+#"/management/schedule"
 
 @app.route("/on")
 def turnOnLED():
