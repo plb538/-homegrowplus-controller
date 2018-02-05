@@ -37,46 +37,33 @@ def getLights():
         {'number':'2', 'status':'off'}
     ), 200
 
-@app.route("/sensors/fluids")
+@app.route("/sensors/fluids", methods=['GET'])
 def getFluids():
-    return jsonify(
-    {'name':'cleanwater', 'level':'74'},
-    {'name':'drainwater', 'level':'12'},
-    {'name':'nitrogen', 'level':'91'},
-    {'name':'phosphorus', 'level':'87'},
-    {'name':'potassium', 'level':'55'},
-    {'name':'acid', 'level':'43'},
-    {'name':'base', 'level':'83'},
-    {'name':'mixer', 'level':'3'}
-    ), 200
+    cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
+    cur.execute("""SELECT * FROM sensors.fluids""")
+    results = cur.fetchall()
+    dbc.disconnectFromDB(con)
+    return jsonify(results), 200
 
-@app.route("/sensors/pumps")
+@app.route("/sensors/pumps", methods=['GET'])
 def getPumps():
-    return jsonify(
-    {'name':'cleanwater', 'status':'off'},
-    {'name':'drainwater', 'status':'off'},
-    {'name':'nitrogen', 'status':'off'},
-    {'name':'phosphorus', 'status':'off'},
-    {'name':'potassium', 'status':'off'},
-    {'name':'acid', 'status':'off'},
-    {'name':'base', 'status':'off'},
-    {'name':'mixer', 'status':'on'}
-    ), 200
+    cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
+    cur.execute("""SELECT * FROM sensors.pumps""")
+    results = cur.fetchall()
+    dbc.disconnectFromDB(con)
+    return jsonify(results), 200
 
 @app.route("/control/light")
 def setLight():
     print "Light Control NYI"
     return jsonify(), 200
 
-@app.route("/control/pumps", methods=['GET','POST'])
+@app.route("/control/pumps", methods=['POST'])
 def setPump():
     print "Pump Control NYI"
     cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
     cur.execute("""UPDATE sensors.pumps SET status = {} WHERE name = '{}'""".format(request.json['on'], request.json['pump']))
-    #results = cur.fetchall()
-    #print results
     con.commit()
-    print request.json['on']
     dbc.disconnectFromDB(con)
     return jsonify(), 200
 
