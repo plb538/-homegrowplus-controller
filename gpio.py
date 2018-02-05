@@ -2,7 +2,7 @@
 
 import RPi.GPIO as io
 import dbConnector as dbc
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
@@ -68,9 +68,16 @@ def setLight():
     print "Light Control NYI"
     return jsonify(), 200
 
-@app.route("/control/pump")
+@app.route("/control/pumps", methods=['GET','POST'])
 def setPump():
     print "Pump Control NYI"
+    cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
+    cur.execute("""UPDATE sensors.pumps SET status = {} WHERE name = '{}'""".format(request.json['on'], request.json['pump']))
+    #results = cur.fetchall()
+    #print results
+    con.commit()
+    print request.json['on']
+    dbc.disconnectFromDB(con)
     return jsonify(), 200
 
 @app.route("/management/schedule")
@@ -84,8 +91,7 @@ if __name__ == "__main__":
 
     print "Starting"
     try:
-        dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
-       # app.run(host='0.0.0.0')
+        app.run(host='0.0.0.0')
     except Exception as e:
         print e
     finally:
