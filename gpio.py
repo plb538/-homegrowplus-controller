@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#import RPi.GPIO as io
+import RPi.GPIO as io
 import dbConnector as dbc
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -38,29 +38,14 @@ CORS(app)
 #"/control/lights"
 #"/management/schedule"
 
-@app.route("/on")
-def turnOnLED():
-   # io.output(12, True)
-    print "LED on"
-    return jsonify({'hello': 'world'}), 200
-
-
-@app.route("/off")
-def turnOffLED():
-   # io.output(12, False)
-    print "LED off"
-    return jsonify({'goodbye': 'world'}), 200
-
 
 if __name__ == "__main__":
-   # io.setwarnings(False)
-   # io.setmode(io.BOARD)
+    io.setwarnings(False)
+    io.setmode(io.BOARD)
 
-    # Pin setup
-   # io.setup(12, io.OUT)
     print "Starting"
     try:
-        dbc.connectToDB('localhost', 8086, 'root', 'root', 'testDB')
+        dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
        # app.run(host='0.0.0.0')
     except Exception as e:
         print e
