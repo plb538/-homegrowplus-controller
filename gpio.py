@@ -32,6 +32,7 @@ CORS(app)
 
 @app.route("/sensors/light")
 def getLights():
+    print "Get received on lights -- fetching from DB (NYI)"
     return jsonify(
         {'number':'1', 'status':'on'},
         {'number':'2', 'status':'off'}
@@ -39,6 +40,7 @@ def getLights():
 
 @app.route("/sensors/fluids", methods=['GET'])
 def getFluids():
+    print "Get received on fluids -- fetching from DB"
     cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
     cur.execute("""SELECT * FROM sensors.fluids""")
     results = cur.fetchall()
@@ -47,6 +49,7 @@ def getFluids():
 
 @app.route("/sensors/pumps", methods=['GET'])
 def getPumps():
+    print "Get received on pumps -- fetching from DB"
     cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
     cur.execute("""SELECT * FROM sensors.pumps""")
     results = cur.fetchall()
@@ -55,12 +58,12 @@ def getPumps():
 
 @app.route("/control/light")
 def setLight():
-    print "Light Control NYI"
+    print "Set received on light -- Activating light # (NYI)"
     return jsonify(), 200
 
 @app.route("/control/pumps", methods=['POST'])
 def setPump():
-    print "Pump Control NYI"
+    print "Set received on pump -- Activating pump ", request.json['pump']
     cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
     cur.execute("""UPDATE sensors.pumps SET status = {} WHERE name = '{}'""".format(request.json['on'], request.json['pump']))
     con.commit()
@@ -69,7 +72,7 @@ def setPump():
 
 @app.route("/management/schedule")
 def setSchedule():
-    print "Pump Control NYI"
+    print "Set received on schedule -- Saving new version to DB (NYI)"
     return jsonify(), 200
 
 if __name__ == "__main__":
