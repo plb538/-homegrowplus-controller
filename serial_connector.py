@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 from nanpy import ArduinoApi, SerialManager
 
 # Connect to Arduino
@@ -19,6 +20,8 @@ def readPins():
 
 
 def flipPinState(api, pin):
+    print "Flipped pin"
+    return
     if api.digitalRead(pin) == True:
         api.digitalWrite(pin, api.LOW)
     else:
@@ -35,5 +38,5 @@ def quantize(value, orig_scale, new_scale, precision):
 
 def remap(x, in_min, in_max, out_min, out_max):
 	return (x-in_min)*(out_max - out_min) / (in_max - in_min) + out_min
-  
+
 
