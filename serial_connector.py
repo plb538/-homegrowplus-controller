@@ -42,7 +42,7 @@ def turnOff(api, pin, t, duty=0):
         if t == "a":
             api.analogWrite(pin, duty)
         elif t == "d":
-            api.digitalWrite(pin, api.HIGH)
+            api.digitalWrite(pin, api.LOW)
     except Exception as e:
         print "Failed to turn off pin: {}{}".format(t, pin)
 
