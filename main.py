@@ -149,7 +149,8 @@ def poll(api):
         print "polling"
         try:
             cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
-            cur.execute("""UPDATE ph_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, pH_sensor_0, "a"), 14), "ph_sensor_0"))
+            val = sc.quantize(sc.readPin(api, pH_sensor_0, "a"), 14)
+            cur.execute("""UPDATE ph_sensors SET value = {} WHERE name = '{}'""".format(val, "ph_sensor_0"))
             #cur.execute("""UPDATE temp_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, temp_sensor_0, "a"), 30), "temp_sensor_0"))
             val = sc.quantize(sc.readPin(api, clean_water_conductivity_sensor, "d"), 5)
             cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(val, "clean_water"))
@@ -188,62 +189,60 @@ def poll(api):
 if __name__ == "__main__":
     print "Starting"
     try:
-		api = sc.connectToArduino()
-	        # Initialize analog pins
-		# Analog read = 0-1023
-		# Analog write = 0-255
-		pH_sensor_0 = 0
-		temp_sensor_0 = 1
-	    light_0 = 2
-	    mixer_0 = 3
-	    mixer_pump = 4 #Set duty to 255
-	    mister_pump = 5 #Set duty to 255
+        api = sc.connectToArduino()
+	# Initialize analog pins
+	# Analog read = 0-1023
+	# Analog write = 0-255
+	pH_sensor_0 = 0
+	temp_sensor_0 = 1
+	light_0 = 2
+	mixer_0 = 3
+	mixer_pump = 4 #Set duty to 255
+	mister_pump = 5 #Set duty to 255
 
-	    # Initialize digital pins
-	    # HIGH >= 2.5V
-		# Conductivity sensors either high or low (use digital pins)
-		clean_water_conductivity_sensor = 2
-		drain_water_conductivity_sensor = 3
-		nutrient_conductivity_sensor = 4
-		acid_conductivity_sensor = 5
-	    base_conductivity_sensor = 6
-	    mixer_empty_conductivity_sensor = 7
-	    mixer_full_conductivity_sensor = 8
-	    clean_water_pump = 9
-	    drain_water_pump = 10
-	    nutrients_pump = 11
-	    acid_pump = 12
-	    base_pump = 13
+        # Initialize digital pins
+	# HIGH >= 2.5V
+	# Conductivity sensors either high or low (use digital pins)
+	clean_water_conductivity_sensor = 2
+	drain_water_conductivity_sensor = 3
+	nutrient_conductivity_sensor = 4
+	acid_conductivity_sensor = 5
+        base_conductivity_sensor = 6
+	mixer_empty_conductivity_sensor = 7
+	mixer_full_conductivity_sensor = 8
+	clean_water_pump = 9
+	drain_water_pump = 10
+	nutrients_pump = 11
+	acid_pump = 12
+	base_pump = 13
 
-	    pins = {"pH_sensor_0": pH_sensor_0, "temp_sensor_0": temp_sensor_0, "light_0": light_0, "mixer_0": mixer_0, "mixer_pump": mixer_pump, "mister_pump": mister_pump, "clean_water_conductivity_sensor": clean_water_conductivity_sensor, "drain_water_conductivity_sensor": drain_water_conductivity_sensor, "nutrient_conductivity_sensor": nutrient_conductivity_sensor, "acid_conductivity_sensor": acid_conductivity_sensor, "base_conductivity_sensor": base_conductivity_sensor,
-	            "mixer_empty_conductivity_sensor": mixer_empty_conductivity_sensor, "mixer_full_conductivity_sensor": mixer_full_conductivity_sensor, "clean_water_pump": clean_water_pump,	"drain_water_pump": drain_water_pump, "nutrients_pump": nutrients_pump, "acid_pump": acid_pump, "base_pump": base_pump}
+	pins = {"pH_sensor_0": pH_sensor_0, "temp_sensor_0": temp_sensor_0, "light_0": light_0, "mixer_0": mixer_0, "mixer_pump": mixer_pump, "mister_pump": mister_pump, "clean_water_conductivity_sensor": clean_water_conductivity_sensor, "drain_water_conductivity_sensor": drain_water_conductivity_sensor, "nutrient_conductivity_sensor": nutrient_conductivity_sensor, "acid_conductivity_sensor": acid_conductivity_sensor, "base_conductivity_sensor": base_conductivity_sensor, "mixer_empty_conductivity_sensor": mixer_empty_conductivity_sensor, "mixer_full_conductivity_sensor": mixer_full_conductivity_sensor, "clean_water_pump": clean_water_pump, "drain_water_pump": drain_water_pump, "nutrients_pump": nutrients_pump, "acid_pump": acid_pump, "base_pump": base_pump}
 
-	        # Set pin modes
-		api.pinMode(pH_sensor_0, api.INPUT)
-		api.pinMode(temp_sensor_0, api.INPUT)
-		api.pinMode(light_0, api.OUTPUT)
-	    api.pinMode(mixer_0, api.OUTPUT)
-	    api.pinMode(clean_water_conductivity_sensor, api.INPUT)
-	    api.pinMode(drain_water_conductivity_sensor, api.INPUT)
-	    api.pinMode(nutrient_conductivity_sensor, api.INPUT)
-		api.pinMode(acid_conductivity_sensor, api.INPUT)
-	    api.pinMode(base_conductivity_sensor, api.INPUT)
-	    api.pinMode(mixer_empty_conductivity_sensor, api.INPUT)
-	    api.pinMode(mixer_full_conductivity_sensor, api.INPUT)
-	    api.pinMode(clean_water_pump, api.OUTPUT)
-	    api.pinMode(drain_water_pump, api.OUTPUT)
-		api.pinMode(nutrients_pump, api.OUTPUT)
-		api.pinMode(acid_pump, api.OUTPUT)
-		api.pinMode(base_pump, api.OUTPUT)
-	    api.pinMode(mixer_pump, api.OUTPUT)
-		api.pinMode(mister_pump, api.OUTPUT)
+	# Set pin modes
+	api.pinMode(pH_sensor_0, api.INPUT)
+	api.pinMode(temp_sensor_0, api.INPUT)
+	api.pinMode(light_0, api.OUTPUT)
+        api.pinMode(mixer_0, api.OUTPUT)
+        api.pinMode(clean_water_conductivity_sensor, api.INPUT)
+        api.pinMode(drain_water_conductivity_sensor, api.INPUT)
+        api.pinMode(nutrient_conductivity_sensor, api.INPUT)
+	api.pinMode(acid_conductivity_sensor, api.INPUT)
+        api.pinMode(base_conductivity_sensor, api.INPUT)
+        api.pinMode(mixer_empty_conductivity_sensor, api.INPUT)
+        api.pinMode(mixer_full_conductivity_sensor, api.INPUT)
+        api.pinMode(clean_water_pump, api.OUTPUT)
+        api.pinMode(drain_water_pump, api.OUTPUT)
+        api.pinMode(nutrients_pump, api.OUTPUT)
+	api.pinMode(acid_pump, api.OUTPUT)
+	api.pinMode(base_pump, api.OUTPUT)
+	api.pinMode(mixer_pump, api.OUTPUT)
+	api.pinMode(mister_pump, api.OUTPUT)
 
-	        #p = Process(target=poll, args=(api,))
-	        #p.start()
-		app.run(host='0.0.0.0', port=5000, threaded=True)
+	p = Process(target=poll, args=(api,))
+	p.start()
+	app.run(host='0.0.0.0', port=5000, threaded=True)
     except Exception as e:
-        pass
-        #p.join()
+        p.join()
     finally:
         for pin in pins:
             sc.turnOff(api, pins[pin], "a")
