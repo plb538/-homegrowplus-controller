@@ -92,7 +92,7 @@ def setPumpStatus():
     results, code = getPumpSensors()
     results = json.loads(results.response[0])
     results = dict([((el[0]), float(el[1])) for el in results])
-    print results['drain_water']
+    print request.json['pump']
     t = ""
     if request.json['pump'].startswith("mi"):
         t = "a"
@@ -100,15 +100,18 @@ def setPumpStatus():
         t = "d"
     if (request.json['pump'] == "clean_water" or request.json['pump'] == "nutrients" or request.json['pump'] == "acid" or request.json['pump'] == "base") and results['mixer_full'] > 0:
         return jsonify(), 503
-    elif request.json['pump'] == "drain_water" and results['drain_water'] > 0:
-        return jsonify(), 503
-    elif results[request.json['pump']] == 0:
+    elif request.json['pump'] == "drain_water":
+        if results['drain_water'] > 0:
+            return jsonify(), 503
+    elif request.json['pump'] == "mixer":
+        if results['mixer_empty'] == 0:
+            return jsonify(), 503
+    elif (request.json['pump'] != "drain_water" or request.json['pump'] != "mixer") and results[request.json['pump']] == 0:
         return jsonify(), 503
     if request.json['on'] is True:
         sc.turnOn(api, pins["{}_pump".format(request.json['pump'])], t)
     else:
         sc.turnOff(api, pins["{}_pump".format(request.json['pump'])], t)
-    print request.json['on'], request.json['pump']
     cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
     cur.execute("""UPDATE pumps SET status = {} WHERE name = '{}'""".format(request.json['on'], request.json['pump']))
     con.commit()
@@ -141,16 +144,23 @@ def getSchedule():
 
 
 def poll(api):
-    dht = DHT(temp_sensor_0, DHT.DHT11)
+    #dht = DHT(temp_sensor_0, DHT.DHT11)
     while True:
+        print "polling"
         try:
             cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres', 'homegrowplus')
             cur.execute("""UPDATE ph_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, pH_sensor_0, "a"), 14), "ph_sensor_0"))
-            cur.execute("""UPDATE temp_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, temp_sensor_0, "a"), 30), "temp_sensor_0"))
-            print sc.readPin(api, temp_sensor_0, "a")
-            cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, clean_water_conductivity_sensor, "d"), 5), "clean_water"))
+            #cur.execute("""UPDATE temp_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, temp_sensor_0, "a"), 30), "temp_sensor_0"))
+            val = sc.quantize(sc.readPin(api, clean_water_conductivity_sensor, "d"), 5)
+            cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(val), "clean_water"))
+            if val == 0:
+                cur.execute("""UPDATE pumps SET status = {} WHERE name = '{}'""".format(false, "clean_water"))
             cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, drain_water_conductivity_sensor, "d"), 5), "drain_water"))
+            if val == 0:
+                                 cur.execute("""UPDATE pumps SET status = {} WHERE name = '{}'""".          format(false, "clean_water"))
             cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, nutrient_conductivity_sensor, "d"), 5), "nutrients"))
+            if val == 0:
+                                 cur.execute("""UPDATE pumps SET status = {} WHERE name = '{}'""".          format(false, "clean_water"))
             cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, acid_conductivity_sensor, "d"), 5), "acid"))
             cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, base_conductivity_sensor, "d"), 5), "base"))
             cur.execute("""UPDATE conductivity_sensors SET value = {} WHERE name = '{}'""".format(sc.quantize(sc.readPin(api, mixer_empty_conductivity_sensor, "d"), 5), "mixer_empty"))
@@ -160,7 +170,7 @@ def poll(api):
             print "Could not poll data from the Arduino"
         finally:
             dbc.disconnectFromDB(con)
-            time.sleep(1)
+            time.sleep(2)
 
 
 if __name__ == "__main__":
@@ -171,7 +181,7 @@ if __name__ == "__main__":
 	# Analog read = 0-1023
 	# Analog write = 0-255
 	pH_sensor_0 = 0
-	temp_sensor_0 = 8
+	temp_sensor_0 = 1
         light_0 = 2
         mixer_0 = 3
         mixer_pump = 4 #Set duty to 255
@@ -186,7 +196,7 @@ if __name__ == "__main__":
 	acid_conductivity_sensor = 5
         base_conductivity_sensor = 6
         mixer_empty_conductivity_sensor = 7
-        #mixer_full_conductivity_sensor = 8
+        mixer_full_conductivity_sensor = 8
         clean_water_pump = 9
         drain_water_pump = 10
         nutrients_pump = 11
@@ -216,15 +226,20 @@ if __name__ == "__main__":
         api.pinMode(mixer_pump, api.OUTPUT)
 	api.pinMode(mister_pump, api.OUTPUT)
 
-        p = Process(target=poll, args=(api,))
-        p.start()
+        #p = Process(target=poll, args=(api,))
+        #p.start()
 	app.run(host='0.0.0.0', port=5000, threaded=True)
     except Exception as e:
-        p.join()
+        pass
+        #p.join()
     finally:
         for pin in pins:
             sc.turnOff(api, pins[pin], "a")
             sc.turnOff(api, pins[pin], "d")
-        # To do: set all db statuses to false
+        cur, con = dbc.connectToDB('localhost', 5432, 'postgres', 'postgres',          'homegrowplus')
+        for table in {'pumps', 'lights', 'mixers'}:
+            cur.execute("""UPDATE {} SET status = false""".format(table))
+        con.commit()
+        dbc.disconnectFromDB(con)
     print "Exiting"
 
