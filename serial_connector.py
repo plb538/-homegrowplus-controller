@@ -22,7 +22,7 @@ def readPin(api, pin, t):
         elif t == "d":
             return api.digitalRead(pin)
     except Exception as e:
-        print "Failed to read pin: {}".format(pin)
+        print "Failed to read pin: {}{}".format(t, pin)
         print e
 
 
@@ -45,6 +45,7 @@ def turnOff(api, pin, t, duty=0):
             api.digitalWrite(pin, api.LOW)
     except Exception as e:
         print "Failed to turn off pin: {}{}".format(t, pin)
+        print e
 
 
 def quantize(value, new_max, new_min=0, orig_max=1023, orig_min=0, precision=2):
