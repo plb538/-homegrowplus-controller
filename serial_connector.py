@@ -6,7 +6,7 @@ from nanpy import ArduinoApi, SerialManager
 # Connect to Arduino
 def connectToArduino():
     try:
-        con = SerialManager()
+        con = SerialManager(timeout=3)
         api = ArduinoApi(connection = con)
         return api
     except Exception as e:
